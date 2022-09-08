@@ -3,12 +3,12 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 import os
-from modelos import db, SensorSchema, Sensor, TipoSensor, Central, CentralSchema, Cliente, ClienteSchema, Ubicacion, UbicacionSchema
-from vistas import VistaCentral, VistaClientesCentral
-"""from vistas import VistaApuestas, VistaApuesta, VistaSignIn, VistaLogIn, VistaCarrerasUsuario, \
-    VistaCarrera, VistaTerminacionCarrera, VistaReporte,VistaHealthCheck"""
+from modelos import db, SensorSchema, Sensor, TipoSensor, Central, CentralSchema, Cliente, ClienteSchema, Evento, Ubicacion, UbicacionSchema
+from vistas import VistaCentral, VistaClientesCentral, VistaUbicacionesCliente, VistaSensoresUbicacion, VistaEventosSensores
+
 from faker import Faker
 from faker.generator import random
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ABC.db'
@@ -29,21 +29,14 @@ api = Api(app)
 
 api.add_resource(VistaCentral, '/central')
 api.add_resource(VistaClientesCentral, '/central/<int:id_central>/clientes')
+api.add_resource(VistaUbicacionesCliente, '/cliente/<int:id_cliente>/ubicaciones')
+api.add_resource(VistaSensoresUbicacion, '/ubicacion/<int:id_ubicacion>/sensores')
+api.add_resource(VistaEventosSensores, '/sensor/<int:id_sensor>/eventos')
+
 """
-api.add_resource(VistaHealthCheck, '/health')
-api.add_resource(VistaSignIn, '/signin')
-api.add_resource(VistaLogIn, '/login')
-api.add_resource(VistaCarrerasUsuario, '/usuario/<int:id_usuario>/carreras')
-api.add_resource(VistaCarrera, '/carrera/<int:id_carrera>')
-api.add_resource(VistaApuestas, '/apuestas')
-api.add_resource(VistaApuesta, '/apuesta/<int:id_apuesta>')
-api.add_resource(VistaTerminacionCarrera, '/carrera/<int:id_competidor>/terminacion')
-api.add_resource(VistaReporte, '/carrera/<int:id_carrera>/reporte')
 
 jwt = JWTManager(app)
 """
-
-
 
 with app.app_context():
     data_factory = Faker()
@@ -75,19 +68,31 @@ with app.app_context():
         ub= Ubicacion (nombre=nombre2, direccion=direccion2,  pais='Colombia', ciudad='Bogota', descripcion=descripcion)
         cl.ubicaciones.append(ub)
 
-        list1 = ['TEMPERATURA','HUMEDAD','CONCENTRACION','INCENDIO','MOVIMIENTO','SIGNOS','PANICO']
+        list1 = ['TEMPERATURA','HUMEDAD','CONCENTRACION','INCENDIO','MOVIMIENTO','SIGNOS']
+        list2 = ['SAMSUNG','NOKIA','SONY','HUAWEI','APPLE']
 
         sensor_tipo2=random.choice(list1)
         serial2=data_factory.bothify(text='????-########')
         marca2=data_factory.company()
         s = Sensor(serial=serial2, marca= marca2, tipo=sensor_tipo2)
 
-        sensor_tipo2=random.choice(list1)
+        marca2=random.choice(list2)
         serial2=data_factory.bothify(text='????-########')
-        marca2=data_factory.company()
-        s2 = Sensor(serial=serial2, marca= marca2, tipo=sensor_tipo2)
+
+        s2 = Sensor(serial=serial2, marca= marca2, tipo=TipoSensor.PANICO)
         ub.sensores.append(s)
         ub.sensores.append(s2)
+
+        for j in range(20):
+            list3 = ['MEDICION','ADVERTENCIA']
+            list4 = ['ABIERTO','PROCESADO','CERRADO','TRANSITO']
+            fecha_evento = data_factory.date_time_between(start_date='-1d', end_date='now')
+            evento_tipo2=random.choice(list3)
+            descripcion2= data_factory.paragraph(nb_sentences=2)
+            evento_estado=random.choice(list4)
+
+            evento_aux = Evento(tipo=evento_tipo2,descripcion=descripcion2,fecha=fecha_evento,estado=evento_estado)
+            s.eventos.append(evento_aux)
 
     db.session.add(c)
 

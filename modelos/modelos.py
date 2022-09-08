@@ -21,6 +21,11 @@ class TipoSensor(enum.Enum):
     SIGNOS = 6
     PANICO = 7
 
+class TipoEvento(enum.Enum):
+    MEDICION = 1
+    ADVERTENCIA = 2
+    ALARMA = 3
+
 class Central(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(50))
@@ -62,10 +67,12 @@ class Condicion(db.Model):
 
 class Evento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(20))
+    tipo = db.Column(db.Enum(TipoEvento))
     descripcion = db.Column(db.String(300))
+    fecha = db.Column(db.String(20))
+    tiempo_respuesta = db.Column(db.String(20))
+    estado = db.Column(db.String(20))
     sensor = db.Column(db.Integer, db.ForeignKey('sensor.id'))
-    registro_eventos = db.relationship('RegistroEvento', cascade='all, delete, delete-orphan')
 
 class Operador(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,12 +88,6 @@ class RegistroActividad(db.Model):
     evento = db.Column(db.String(40))
     operador = db.Column(db.Integer, db.ForeignKey("operador.id"))
 
-class RegistroEvento(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    fecha = db.Column(db.String(20))
-    tiempo_respuesta = db.Column(db.String(20))
-    estado = db.Column(db.String(20))
-    evento = db.Column(db.Integer, db.ForeignKey("evento.id"))
 
 class RegistroServicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -110,6 +111,7 @@ class Sensor(db.Model):
     marca = db.Column(db.String(50))
     tipo =  db.Column(db.Enum(TipoSensor))
     ubicacion = db.Column(db.Integer, db.ForeignKey("ubicacion.id"))
+    eventos = db.relationship('Evento', cascade='all, delete, delete-orphan')
 
 class Servicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -171,6 +173,7 @@ class CondicionSchema(SQLAlchemyAutoSchema):
 
 
 class EventoSchema(SQLAlchemyAutoSchema):
+    tipo = EnumADiccionario(attribute=('tipo'))
     class Meta:
         model = Evento
         include_relationships = True
@@ -186,12 +189,6 @@ class OperadorSchema(SQLAlchemyAutoSchema):
 class RegistroActividadSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = RegistroActividad
-        include_relationships = True
-        load_instance = True
-
-class RegistroEventoSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = RegistroEvento
         include_relationships = True
         load_instance = True
 
