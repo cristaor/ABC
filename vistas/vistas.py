@@ -3,16 +3,18 @@ from flask_jwt_extended import jwt_required, create_access_token
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 
-from modelos import db, Central, CentralSchema, Cliente, ClienteSchema, Ubicacion, UbicacionSchema, Sensor, SensorSchema, Evento, EventoSchema
+from modelos import db, Central, CentralSchema, Cliente, ClienteSchema, Ubicacion, UbicacionSchema, Sensor, SensorSchema, Evento, EventoSchema, ValidatorLog, ValidatorLogSchema
 import re
 import json
 import numbers
+import requests
 
 central_schema = CentralSchema()
 cliente_schema = ClienteSchema()
 ubicacion_schema = UbicacionSchema()
 sensor_schema = SensorSchema()
 evento_schema = EventoSchema()
+validator_schema= ValidatorLogSchema()
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
@@ -119,3 +121,17 @@ class VistaEventosSensores(Resource):
     def get(self, id_sensor):
         sensor = Sensor.query.get_or_404(id_sensor)
         return [evento_schema.dump(ca) for ca in sensor.eventos]
+
+
+class VistaNotificacion(Resource):
+    def post(self):
+        aux_payload= str(json.dumps(request.json))
+        validator = ValidatorLog(fecha=request.json["fecha_evento"], uuid=request.json["uuid"],payload=aux_payload)
+        #print(json.dumps(request.json))
+        db.session.add(validator)
+        db.session.commit()
+        payload2 = {'fecha_evento': request.json["fecha_evento"], 'uuid': request.json["uuid"], 'payload': aux_payload}
+        #r = requests.post('http://localhost:8001/notificacion', json=payload2)
+        #r = requests.post('http://localhost:8002/notificacion', json=payload2)
+        #r = requests.post('http://localhost:8003/notificacion', json=payload2)
+        return validator_schema.dump(validator)

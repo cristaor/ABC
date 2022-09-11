@@ -131,6 +131,13 @@ class Ubicacion(db.Model):
     cliente = db.Column(db.Integer, db.ForeignKey("cliente.id"))
     sensores = db.relationship('Sensor', cascade='all, delete, delete-orphan')
 
+class ValidatorLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.String(20))
+    uuid = db.Column(db.String(60))
+    instancia = db.Column(db.Numeric)
+    payload = db.Column(db.String(256))
+
 class Vinculado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(128))
@@ -230,3 +237,11 @@ class VinculadoSchema(SQLAlchemyAutoSchema):
         model = Vinculado
         include_relationships = True
         load_instance = True
+
+class ValidatorLogSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = ValidatorLog()
+        include_relationships = True
+        load_instance = True
+
+    instancia = fields.Number()
