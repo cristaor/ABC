@@ -9,6 +9,8 @@ import json
 import numbers
 import requests
 
+import uuid
+
 central_schema = CentralSchema()
 cliente_schema = ClienteSchema()
 ubicacion_schema = UbicacionSchema()
@@ -132,7 +134,7 @@ class VistaNotificacion(Resource):
         db.session.commit()
                 
         payload2 = {'fecha_evento': request.json["fecha_evento"],
-                    'uuid':request.json["uuid"], 
+                    'uuid':str(uuid.uuid4()), 
                     'client_id':request.json["cliente"], 
                     'location_id':request.json["direccion"], 
                     'sensor_type':'PANICO', 

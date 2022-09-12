@@ -20,12 +20,12 @@ app_context = app.app_context()
 with app.app_context():
     data_factory = Faker()
 
-    for j in range(10000):
+    for j in range(12):
 
         time.sleep(5)
 
 
-        for i in range(10):
+        for i in range(500):
             fecha_evento2 = data_factory.date_time_between(start_date='-1d', end_date='now')
             fecha_evento = str(fecha_evento2)
             nombre = data_factory.first_name() + " " + data_factory.last_name();

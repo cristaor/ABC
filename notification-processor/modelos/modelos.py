@@ -19,6 +19,11 @@ class EventType(enum.Enum):
     ADVERTENCIA = 2
     ALARMA = 3
 
+class FailType(enum.Enum):
+    MENSAJE_ERRADO = 1
+    NO_ENVIADO = 2
+    NONE = 3
+
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     extern_uuid = db.Column(db.String(128)) 
@@ -27,6 +32,7 @@ class Notification(db.Model):
     location_id = db.Column(db.String(200))
     sensor_type = db.Column(db.String(200))
     event_type = db.Column(db.String(200))
+    fail_type = db.Column(db.String(200))
 
     # Representación del objeto
     def __repr__(self) -> str:
