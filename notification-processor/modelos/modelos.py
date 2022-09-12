@@ -22,11 +22,11 @@ class EventType(enum.Enum):
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     extern_uuid = db.Column(db.String(128)) 
-    date_event = db.Column(db.String(10))
-    client_id = db.Column(db.String(128))
-    location_id = db.Column(db.String(128))
-    sensor_type = db.Column(db.String(128))
-    event_type = db.Column(db.String(128))
+    date_event = db.Column(db.String(200))
+    client_id = db.Column(db.String(200))
+    location_id = db.Column(db.String(200))
+    sensor_type = db.Column(db.String(200))
+    event_type = db.Column(db.String(200))
 
     # Representación del objeto
     def __repr__(self) -> str:

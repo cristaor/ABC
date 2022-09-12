@@ -2,7 +2,7 @@ from flask import request
 from flask_jwt_extended import jwt_required, create_access_token
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
-
+import os
 from modelos import db, Central, CentralSchema, Cliente, ClienteSchema, Ubicacion, UbicacionSchema, Sensor, SensorSchema, Evento, EventoSchema, ValidatorLog, ValidatorLogSchema
 import re
 import json
@@ -130,8 +130,21 @@ class VistaNotificacion(Resource):
         #print(json.dumps(request.json))
         db.session.add(validator)
         db.session.commit()
-        payload2 = {'fecha_evento': request.json["fecha_evento"], 'uuid': request.json["uuid"], 'payload': aux_payload}
-        #r = requests.post('http://localhost:8001/notificacion', json=payload2)
-        #r = requests.post('http://localhost:8002/notificacion', json=payload2)
-        #r = requests.post('http://localhost:8003/notificacion', json=payload2)
+                
+        payload2 = {'fecha_evento': request.json["fecha_evento"],
+                    'uuid':request.json["uuid"], 
+                    'client_id':request.json["cliente"], 
+                    'location_id':request.json["direccion"], 
+                    'sensor_type':'PANICO', 
+                     'event_type':request.json["tipo_evento"]
+                    }
+        instance1=os.environ.get("INSTANCE1","localhost")
+        instance2=os.environ.get("INSTANCE2","localhost")
+        instance3=os.environ.get("INSTANCE3","localhost")
+        port1=os.environ.get("PORT1","8081")
+        port2=os.environ.get("PORT2","8081")
+        port3=os.environ.get("PORT3","8081")
+        requests.post(f"http://{instance1}:{port1}/notificacion", json=payload2)
+        requests.post(f"http://{instance2}:{port2}/notificacion", json=payload2)
+        requests.post(f"http://{instance3}:{port3}/notificacion", json=payload2)
         return validator_schema.dump(validator)

@@ -6,7 +6,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
-
+import os
 from vistas import VistaNotification
 from flask_cors import CORS
 
@@ -14,7 +14,12 @@ from flask_cors import CORS
 app = Flask(__name__)  #constructor con el nombre de la aplicación
 
 # BD sin usuario ni contraseña
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notificationProcessor.db'
+host = os.getenv('POSTGRES_HOST','localhost')
+user = os.getenv('POSTGRES_USER','postgres')
+database = os.getenv('POSTGRES_DB','postgres')
+port = os.getenv('POSTGRES_PORT',6379)
+DATABASE_CONNECTION_URI = f'postgresql+psycopg2://{user}@{host}:{port}/{database}'
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_CONNECTION_URI
 # Deshabilitar un flag para que SQlAlchemy no genera track de modificaciones
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -38,9 +43,10 @@ db.create_all()
 cors = CORS(app)
 
 api = Api(app)
-api.add_resource(VistaNotification, '/notifications')
+api.add_resource(VistaNotification, '/notificacion')
 
 jwt = JWTManager(app)
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
 
 

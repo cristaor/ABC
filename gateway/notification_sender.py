@@ -10,6 +10,9 @@ from faker.generator import random
 from datetime import datetime
 import time
 
+import uuid
+
+
 app = Flask(__name__)
 
 app_context = app.app_context()
@@ -29,7 +32,7 @@ with app.app_context():
             direccion = data_factory.address()
             telefono = data_factory.random_int(3000000000, 35000000000)
             email=data_factory.ascii_safe_email()
-            cod_id= data_factory.bban()
+            cod_id= str(uuid.uuid4())
             list1 = ['PANICO']
             list2 = ['SAMSUNG','NOKIA','SONY','HUAWEI','APPLE']
 
@@ -37,7 +40,9 @@ with app.app_context():
             serial2=data_factory.bothify(text='????-########')
             marca2=random.choice(list2)
 
-            payload = {'fecha_evento': fecha_evento, 'cliente': nombre, 'direccion': direccion, 'telefono': telefono, 'email': email, 'marca': marca2, 'tipo_evento': 'ALARMA', 'uuid': cod_id}
+            
+            payload = {'fecha_evento': fecha_evento, 'cliente': nombre, 'direccion': direccion, 'telefono': telefono, 'email': email, 'marca': 'PANICO', 'tipo_evento': 'ALARMA', 'uuid': cod_id}
+            print(f"sending request {payload}")
             r = requests.post('http://localhost:5000/notificacion', json=payload)
 
 

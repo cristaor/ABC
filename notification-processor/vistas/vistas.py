@@ -37,7 +37,7 @@ class ReceivedNotificationRequestEvent:
     event_type: EventType
     instance: str
 
-celery_app = Celery(__name__, broker = 'redis://localhost:6379/0')
+celery_app = Celery(__name__, broker = 'redis://redis:6379/0')
 
 @celery_app.task(name="registrar_log")
 def publish_event(*args):
@@ -48,7 +48,12 @@ notification_schema = NotificationSchema()
 class VistaNotification(Resource):
 
     def post(self):
-        notification = Notification(extern_uuid = request.json["uuid"], client_id=request.json["client_id"], location_id=request.json["location_id"], sensor_type=request.json["sensor_type"], event_type=request.json["event_type"], date_event =request.json["fecha_evento"])
+        notification = Notification(extern_uuid = request.json["uuid"], 
+                                    client_id=request.json["client_id"], 
+                                    location_id=request.json["location_id"], 
+                                    sensor_type=request.json["sensor_type"], 
+                                    event_type=request.json["event_type"], 
+                                    date_event =request.json["fecha_evento"])
         db.session.add(notification)
         db.session.commit()
 
@@ -61,7 +66,7 @@ class VistaNotification(Resource):
         return {"msg": "Notificación recibida exitosamente"}
 
 def should_inject_error()->bool:
-    return randint(0, 20) > 17
+    return randint(0, 100) > 98
 
 def build_received_request_event(id: str, date_event: datetime, client_id: str, 
                                 location_id: str, sensor_type : SensorType, 
