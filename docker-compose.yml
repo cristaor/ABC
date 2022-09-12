@@ -6,7 +6,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - './data/postgres:/bitnami/postgresql'
+      - './data/postgres2:/bitnami/postgresql'
     environment:
       - 'ALLOW_EMPTY_PASSWORD=yes'
     networks:
@@ -52,6 +52,7 @@ services:
       - 'POSTGRES_PORT=5432'
       - 'POSTGRES_USER=postgres'
       - 'POSTGRES_DB=postgres'
+      - 'PYTHONHASHSEED=2'
     ports:
       - "8081:8081"
     depends_on:
@@ -68,6 +69,7 @@ services:
       - 'POSTGRES_PORT=5432'
       - 'POSTGRES_USER=postgres'
       - 'POSTGRES_DB=postgres'
+      - 'PYTHONHASHSEED=2'
     ports:
       - "8082:8082"
     depends_on:
@@ -84,6 +86,7 @@ services:
       - 'POSTGRES_PORT=5432'
       - 'POSTGRES_USER=postgres'
       - 'POSTGRES_DB=postgres'
+      - 'PYTHONHASHSEED=2'
     ports:
       - "8083:8083"
     depends_on:

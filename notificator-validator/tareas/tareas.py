@@ -30,7 +30,7 @@ def registrar_log(event, payload: str):
 
     engine.execute(
         text(
-        "insert into notification_validador values ('{}', '{}', '{}', '{}')".format(datos["id"], datos["date_event"], hashlib.md5(payload.encode('utf-8')).hexdigest(), datos["instance"]))
+        "insert into notification_validador values ('{}', '{}', '{}', '{}')".format(datos["id"], datos["date_event"], datos["client_id"], datos["instance"]))
     )
 
     #notification = Notification(id = datos["id"], date_event=datos["date_event"], message=datos, instance=datos["instance"])

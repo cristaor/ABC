@@ -1,11 +1,12 @@
 import os
 from http import client
 from multiprocessing import Event
+from typing import Tuple
 from flask import request
 from random import randint
 
 from modelos.modelos import Notification, NotificationSchema
-from modelos import db
+from modelos import db, FailType
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 import datetime
@@ -48,54 +49,62 @@ notification_schema = NotificationSchema()
 class VistaNotification(Resource):
 
     def post(self):
+
         notification = Notification(extern_uuid = request.json["uuid"], 
                                     client_id=request.json["client_id"], 
                                     location_id=request.json["location_id"], 
                                     sensor_type=request.json["sensor_type"], 
                                     event_type=request.json["event_type"], 
                                     date_event =request.json["fecha_evento"])
-        db.session.add(notification)
-        db.session.commit()
-
-        event = build_received_request_event(id = notification.extern_uuid, date_event =  notification.date_event, client_id =  notification.client_id, 
+        
+        build_received_request_event(notification = notification, id = notification.extern_uuid, date_event =  notification.date_event, client_id =  notification.client_id, 
                                 location_id = notification.location_id, sensor_type = SensorType[notification.sensor_type], event_type=EventType[notification.event_type])
 
-        # Omitiendo la publicación del evento
-        publish_received_request_event_if_neccesary(event = event)
-        
         return {"msg": "Notificación recibida exitosamente"}
 
-def should_inject_error()->bool:
-    return randint(0, 100) > 98
 
-def build_received_request_event(id: str, date_event: datetime, client_id: str, 
+
+
+def should_inject_error(hash: int)->Tuple[bool, FailType]:
+
+    if randint(0, 100) > 50 and hash % 3 == (int(os.environ.get('instance')) -1) :
+        return (True, FailType.MENSAJE_ERRADO) if randint(0, 100) > 50 else (True, FailType.NO_ENVIADO)
+    else:
+        return (False, FailType.NONE)
+
+def build_received_request_event(notification: Notification, id: str, date_event: datetime, client_id: str, 
                                 location_id: str, sensor_type : SensorType, 
-                                event_type: EventType)-> ReceivedNotificationRequestEvent:
+                                event_type: EventType)->None:
 
     event = ReceivedNotificationRequestEvent()
     event.id = id
     event.date_event = date_event
-
-    if not should_inject_error():
-        event.client_id = client_id    
-    else:
-        print("Alterando el payload para la solicitud {} desde la instancia {}".format(id, os.environ.get('instance')))
-        event.client_id = 222
 
     event.location_id = location_id
     event.sensor_type = sensor_type
     event.event_type = event_type
     event.instance = os.environ.get('instance')
 
-    return event
+    must_fail, type_fail = should_inject_error(hash(notification.extern_uuid))
 
-def publish_received_request_event_if_neccesary(event : ReceivedNotificationRequestEvent)->None:
     
-    if not should_inject_error():
+
+
+    if not must_fail:
+        event.client_id = client_id
         args = ("event", json.dumps(event.__dict__, default=str))
         publish_event.apply_async(args=args, queue= 'queue.notification.requested')
     else:
-        print("Omitiendo evento con ID de solicitud {} desde la instancia {}".format(event.id, os.environ.get('instance')))
-       
+        
+        print("Alterando el payload para la solicitud {} desde la instancia {}".format(id, os.environ.get('instance')))
+        notification.fail_type = type_fail.name
+        db.session.add(notification)
+        db.session.commit()
 
+        if FailType.MENSAJE_ERRADO is type_fail:
+            event.client_id = 222
+            args = ("event", json.dumps(event.__dict__, default=str))
+            publish_event.apply_async(args=args, queue= 'queue.notification.requested')
+    
+       
     
