@@ -20,6 +20,7 @@ class TipoSensor(enum.Enum):
     MOVIMIENTO = 5
     SIGNOS = 6
     PANICO = 7
+    POLICIA = 8
 
 class TipoEvento(enum.Enum):
     MEDICION = 1
